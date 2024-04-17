@@ -22,6 +22,7 @@ typedef struct {
 // Funções do índice hash
 HashDirectory *create_hash_directory(int initial_depth);
 int hash_function(int key, int depth);
+void load_data_from_csv(const char *filename, HashDirectory *dir);
 void insert_entry(HashDirectory *dir, int key, char *data);
 char *search_entry(HashDirectory *dir, int key);
 void delete_entry(HashDirectory *dir, int key);

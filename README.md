@@ -1,4 +1,6 @@
 ## 2024-01_sgbd_trab01_indices
+primeiro trbalho cadeira de sgbd, UFC 2024-04.
+
 ### Estrutura:
 ```
 sgbd_trab01_indices/
@@ -19,7 +21,7 @@ sgbd_trab01_indices/
 ├── Makefile                # Script de automação para compilar e executar o projeto.
 └── README.md               # Instruções e informações sobre o projeto.
 ```
-### Exemplo
+### Exemplo:
 ```
 PG/3
 INC:1001
@@ -33,6 +35,7 @@ BUS=:4004
 
 ```
 Descrição:
+```
 PG/3: Configura a profundidade global inicial do índice hash como 3. Isso significa que o diretório começará com 2^3 (ou seja, 8) buckets potenciais.
 INC:1001: Insere um registro com chave 1001.
 INC:2002: Insere um registro com chave 2002.
@@ -42,6 +45,8 @@ REM:2002: Remove o registro com chave 2002.
 BUS=:2002: Busca pelo registro com chave 2002, mas não deve encontrar, pois foi removido.
 INC:4004: Insere um novo registro com chave 4004.
 BUS=:4004: Busca pelo registro com chave 4004 e espera encontrar o resultado.
+```
+
 
 
 
