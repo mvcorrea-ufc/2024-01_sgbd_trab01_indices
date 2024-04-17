@@ -21,35 +21,17 @@ sgbd_trab01_indices/
 ├── Makefile                # Script de automação para compilar e executar o projeto.
 └── README.md               # Instruções e informações sobre o projeto.
 ```
-### Exemplo:
+### Exemplo (in.txt):
 ```
-PG/3
-INC:1001
-INC:2002
-INC:3003
-BUS=:1001
-REM:2002
-BUS=:2002
-INC:4004
-BUS=:4004
-
+PG/3                            # Configura a profundidade global inicial do índice hash como 3. Isso significa que o diretório começará com 2^3 (ou seja, 8) buckets potenciais.
+INC:1001,1111.00,2014           # Insere um registro com chave 1001.
+INC:1002,2222.50,2015           # Insere um registro com chave 1002.
+INC:1003,3333.60,2016           # Insere um registro com chave 1003.
+INC:1011,4444.40,2017           # Insere um registro com chave 1011.
+INC:1019,5555.70,2017           # Insere um registro com chave 1019.
+BUS=:1001                       # Busca pelo registro com chave 1001 e espera encontrar o resultado.
+REM:1002                        # Remove o registro com chave 1002.
+BUS=:1002                       # Busca pelo registro com chave 1002, mas não deve encontrar, pois foi removido.
+INC:1004,66666.40,2018          # Insere um novo registro com chave 1004.
+#BUS=:1004                      # Busca pelo registro com chave 4004 e espera encontrar o resultado.
 ```
-Descrição:
-```
-PG/3: Configura a profundidade global inicial do índice hash como 3. Isso significa que o diretório começará com 2^3 (ou seja, 8) buckets potenciais.
-INC:1001: Insere um registro com chave 1001.
-INC:2002: Insere um registro com chave 2002.
-INC:3003: Insere um registro com chave 3003.
-BUS=:1001: Busca pelo registro com chave 1001 e espera encontrar o resultado.
-REM:2002: Remove o registro com chave 2002.
-BUS=:2002: Busca pelo registro com chave 2002, mas não deve encontrar, pois foi removido.
-INC:4004: Insere um novo registro com chave 4004.
-BUS=:4004: Busca pelo registro com chave 4004 e espera encontrar o resultado.
-```
-
-
-
-
-
-
-

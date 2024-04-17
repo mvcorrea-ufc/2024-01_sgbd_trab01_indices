@@ -47,16 +47,6 @@ void load_data_from_csv(const char *filename, HashDirectory *dir) {
         float valor;
         char data[1000];
 
-        // nao é necessario fazer o parse de todos os valores do csv :)
-
-        // Supondo que cada linha no CSV seja no formato: chave,dados
-        /*
-        if (sscanf(line, "%d,%f,%d", &pedido, &valor, &ano) == 3) {
-            printf("> Pedido: %d, Preço: %.2f, Ano: %d\n", pedido, valor, ano);
-            //insert_entry(dir, pedido, valor, ano);   // <---- Implementar a inserção de dados
-        }
-        */
-
         // Supondo que cada linha no CSV seja no formato: chave,dados
         if (sscanf(line, "%d,%s", &order, data) == 2) {
             printf(">> Pedido: %d, Dados: %s\n", order, data);
