@@ -1,5 +1,5 @@
 ## 2024-01_sgbd_trab01_indices
-primeiro trbalho cadeira de sgbd, UFC 2024-04.
+primeiro trabalho da cadeira de sgbd, UFC 2024.
 
 ### Estrutura:
 ```

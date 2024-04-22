@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// debug
+#define DEBUG 1
+
 int main() {
 
     // Abrir o arquivo de entrada
@@ -23,7 +26,7 @@ int main() {
     // Ler a profundidade global inicial do diretório de hash
     int initial_depth;
     fscanf(infile, "PG/%d\n", &initial_depth);
-    printf("\n> Profundidade global inicial: %d\n", initial_depth);
+    if(DEBUG) printf("\n> main: Profundidade global inicial: %d\n", initial_depth);
 
     // Criar o diretório hash com a profundidade inicial
     HashDirectory *dir = create_hash_directory(initial_depth);
@@ -34,7 +37,7 @@ int main() {
     // Processar as operações no arquivo de entrada
     char operation[10], data[20];
     int key;
-    printf("\n> Processando operações...\n");
+    if(DEBUG) printf("\n> main: Processando operações...\n");
     
     while (fscanf(infile, "\n%[^:]:%d,%s", operation, &key, data) == 3) {
         //operation[strcspn(operation,"\n")] = '\0';
@@ -42,7 +45,7 @@ int main() {
         // TODO: verificar o porque o fscanf não está lendo corretamente a string de operação
 
         if (operation[0] == '#') { continue; } // pula os comentários
-        printf(">> op:[%s], key:[%d], data[%s]\n", operation, key, data);
+        if(DEBUG) printf(">>\tmain: op:[%s], key:[%d], data[%s]\n", operation, key, data);
         
         if (strcmp(operation, "INC") == 0) {
             insert_entry(dir, key, data); // Suponha que a entrada de dados seja uma string genérica
