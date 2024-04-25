@@ -26,6 +26,8 @@ HashDirectory *create_hash_directory(int initial_depth) {
             exit(EXIT_FAILURE);
         }
         fclose(bucket_file);
+
+        if(i >20) exit(0);
     }
     return dir;
 }
@@ -97,6 +99,7 @@ void insert_entry(HashDirectory *dir, int key, char *data) {
         }
 
         fclose(bucket_file); // Fechar o arquivo após a inserção
+        fflush(stdout);
 }
 
 
@@ -180,11 +183,14 @@ void split_bucket(HashDirectory *dir, int bucket_index) {
         sscanf(temp_entries[i], "%d,%*s", &key);
         int index = hash_function(key, dir->global_depth);
         printf(">>>>\tsplit_bucket: Chave: %d, Dados: %s, Hash: %d << ", key, temp_entries[i], index);
+
         if (index == bucket_index) {
+            strcat(temp_entries[i], "\n");
             fputs(temp_entries[i], original_bucket_file);
             printf("Mantendo no bucket original [%d] >>\n", bucket_index);
         } else {
             FILE *new_file = fopen(dir->buckets[new_bucket_index]->filename, "a");
+            strcat(temp_entries[i], "\n");
             fputs(temp_entries[i], new_file);
             fclose(new_file);
             printf("Movendo para o novo bucket [%d] >>\n", new_bucket_index);

@@ -1,9 +1,16 @@
 CC=gcc
-CFLAGS=-I. 
+CFLAGS=-I. -g -Wall 
 #-Wall -Wextra -Werror -g
+#-O2 -Wall -g
+# -g -> with debug info
 
-sgbd-t1: src/main.o src/hash_index.o
-	$(CC) -o sgbd-t1 src/main.o src/hash_index.o $(CFLAGS)
+APP = sgbd-t1
+SRCS = $(wildcard src/*.c)
+OBJS = $(SRCS:.c=.o)
+
+$(APP): $(OBJS)
+	$(CC) -o $(APP) $(OBJS) $(CFLAGS)
+	@echo "Compiled ["$@"] successfully!"
 
 src/main.o: src/main.c src/hash_index.h
 	$(CC) -c src/main.c -o src/main.o $(CFLAGS)
@@ -11,9 +18,9 @@ src/main.o: src/main.c src/hash_index.h
 src/hash_index.o: src/hash_index.c src/hash_index.h
 	$(CC) -c src/hash_index.c -o src/hash_index.o $(CFLAGS)
 
-run:
-	./sgbd-t1
+run: $(APP)
+	./$(APP)
 
 clean:
-	rm -f src/*.o sgbd-t1 buckets/*.txt
+	rm -f $(APP) $(OBJS) buckets/*.txt
 

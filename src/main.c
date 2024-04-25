@@ -19,17 +19,27 @@ int main() {
     FILE *outfile = fopen("data/out.txt", "w");
     if (outfile == NULL) {
         perror("Erro ao abrir o arquivo de saída");
-        fclose(infile);
+        fclose(infile); 
         return EXIT_FAILURE;
     }
 
     // Ler a profundidade global inicial do diretório de hash
-    int initial_depth;
+    int initial_depth = 0;
     fscanf(infile, "PG/%d\n", &initial_depth);
+    if(initial_depth == 0) {
+        fprintf(stderr, "Erro: Profundidade global inválida\n");
+        fclose(infile);
+        fclose(outfile);
+        return EXIT_FAILURE;
+    }
+
     if(DEBUG) printf("\n> main: Profundidade global inicial: %d\n", initial_depth);
 
+    
     // Criar o diretório hash com a profundidade inicial
     HashDirectory *dir = create_hash_directory(initial_depth);
+    
+    //exit(0);
 
     // Carregar dados iniciais do arquivo CSV
     load_data_from_csv("data/compras.csv", dir);
@@ -37,14 +47,18 @@ int main() {
     // Processar as operações no arquivo de entrada
     char operation[10], data[20];
     int key;
-    if(DEBUG) printf("\n> main: Processando operações...\n");
+
+    //fflush(stdout);
+
+    if(DEBUG) printf("\n\033[0;36m> main: Processando operações...\033[0m\n");
     
     while (fscanf(infile, "\n%[^:]:%d,%s", operation, &key, data) == 3) {
         //operation[strcspn(operation,"\n")] = '\0';
 
         // TODO: verificar o porque o fscanf não está lendo corretamente a string de operação
-
-        if (operation[0] == '#') { continue; } // pula os comentários
+        
+        if (operation[0] == '\n') { continue; } // skip empty lines
+        if (operation[0] == '#') { continue; }  // pula os comentários
         if(DEBUG) printf(">>\tmain: op:[%s], key:[%d], data[%s]\n", operation, key, data);
         
         if (strcmp(operation, "INC") == 0) {

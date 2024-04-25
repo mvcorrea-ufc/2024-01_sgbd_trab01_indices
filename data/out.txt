@@ -1,4 +1,0 @@
-INC:1001/Operação concluída
-INC:1003/Operação concluída
-INC:1011/Operação concluída
-INC:1019/Operação concluída
