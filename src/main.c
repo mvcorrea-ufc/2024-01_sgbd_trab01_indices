@@ -5,6 +5,9 @@
 
 // debug
 #define DEBUG 1
+#define CRESET  "\x1b[0m"
+#define CCYAN   "\x1b[36m"
+#define CRED    "\x1b[31m" 
 
 int main() {
 
@@ -32,9 +35,7 @@ int main() {
         fclose(outfile);
         return EXIT_FAILURE;
     }
-
-    if(DEBUG) printf("\n> main: Profundidade global inicial: %d\n", initial_depth);
-
+    if(DEBUG) printf(CCYAN "\n> main: Profundidade global inicial: %d\033[0m\n" CRESET, initial_depth);
     
     // Criar o diretório hash com a profundidade inicial
     HashDirectory *dir = create_hash_directory(initial_depth);
@@ -50,26 +51,32 @@ int main() {
 
     //fflush(stdout);
 
-    if(DEBUG) printf("\n\033[0;36m> main: Processando operações...\033[0m\n");
+    if(DEBUG) printf(CCYAN "\n> main: Processando operações...\n" CRESET);
+
+    int cnt = 0;
     
-    while (fscanf(infile, "\n%[^:]:%d,%s", operation, &key, data) == 3) {
+    while (fscanf(infile, "\n%[^:]:%d,%s", operation, &key, data)== 3) {
         //operation[strcspn(operation,"\n")] = '\0';
 
         // TODO: verificar o porque o fscanf não está lendo corretamente a string de operação
-        
+        printf("[%s][%d][%s]\n", operation, key, data);
+        if (cnt++ > 20) break;
         if (operation[0] == '\n') { continue; } // skip empty lines
         if (operation[0] == '#') { continue; }  // pula os comentários
         if(DEBUG) printf(">>\tmain: op:[%s], key:[%d], data[%s]\n", operation, key, data);
         
-        if (strcmp(operation, "INC") == 0) {
+        if (strcmp(operation, "INC") == 0) { // Inserir uma nova entrada
             insert_entry(dir, key, data); // Suponha que a entrada de dados seja uma string genérica
             fprintf(outfile, "INC:%d/Operação concluída\n", key);
         } 
         /*
-        else if (strcmp(operation, "REM") == 0) {
+        else if (strcmp(operation, "REM") == 0) { // Remover uma entrada existente
             delete_entry(dir, key);
             fprintf(outfile, "REM:%d/Operação concluída\n", key);
-        } else if (strcmp(operation, "BUS") == 0) {
+        } 
+        */
+        /*
+        else if (strcmp(operation, "BUS") == 0) {
             char *result = search_entry(dir, key);
             if (result != NULL) {
                 fprintf(outfile, "BUS:%d/Encontrado\n", key);
@@ -78,10 +85,12 @@ int main() {
             }
         }
         */
+
+       
     }
 
     // Liberar recursos e fechar arquivos
-    free_hash_directory(dir);
+    //free_hash_directory(dir);
     fclose(infile);
     fclose(outfile);
 

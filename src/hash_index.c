@@ -2,6 +2,10 @@
 
 // conditional debuggin
 #define DEBUG 1
+#define CRESET  "\x1b[0m"
+#define CCYAN   "\x1b[36m"
+#define CRED    "\x1b[31m"
+
 
 // Cria um novo diretório de hash com profundidade inicial e arquivos de bucket
 HashDirectory *create_hash_directory(int initial_depth) {
@@ -52,7 +56,7 @@ void load_data_from_csv(const char *filename, HashDirectory *dir) {
         return;
     }
 
-    if(DEBUG) printf("\n> load_data_from_csv: Carregando dados do arquivo CSV...\n");
+    if(DEBUG) printf(CCYAN "\n> load_data_from_csv: Carregando dados do arquivo CSV...\n" CRESET);
     char line[1024];
     while (fgets(line, sizeof(line), csvfile) != NULL) {
         // clean
@@ -104,7 +108,7 @@ void insert_entry(HashDirectory *dir, int key, char *data) {
 
 
 
-// Busca por uma entrada usando a chave
+// Busca por uma entrada usando a chave !TODO!
 char *search_entry(HashDirectory *dir, int key) {
     int index = hash_function(key, dir->global_depth);
     Bucket *bucket = dir->buckets[index];
@@ -117,11 +121,51 @@ char *search_entry(HashDirectory *dir, int key) {
 void delete_entry(HashDirectory *dir, int key) {
     int index = hash_function(key, dir->global_depth);
     Bucket *bucket = dir->buckets[index];
-    
-    // Implementação da lógica de remoção
+    printf(">>>\tdelete_entry: Removendo chave: %d do bucket: %d\n", key, index);
+
+    // Abrir o arquivo do bucket para leitura
+    FILE *file = fopen(bucket->filename, "r");
+    if (file == NULL) {
+        perror("Erro ao abrir o arquivo do bucket");
+        return;
+    }
+
+    char line[1024];
+    char *new_contents = NULL; // Buffer para armazenar conteúdo atualizado
+    size_t new_size = 0;
+
+    // Ler o arquivo e filtrar a entrada a ser removida
+    while (fgets(line, sizeof(line), file) != NULL) {
+        printf(">>>\tdelete_entry: Lendo linha: %s\n", line);
+        int current_key;
+        sscanf(line, "%d,%*s", &current_key);
+        if (current_key != key) {
+            // Se a chave não é a que queremos deletar, adiciona ao buffer
+            new_size += strlen(line);
+            new_contents = realloc(new_contents, new_size + 1);
+            strcat(new_contents, line);
+        }
+    }
+
+    fclose(file);
+
+    // Reescrever o arquivo do bucket apenas com as entradas que não foram deletadas
+    file = fopen(bucket->filename, "w");
+    if (file == NULL) {
+        perror("Erro ao reabrir o arquivo do bucket para escrita");
+        free(new_contents);
+        return;
+    }
+
+    if (new_contents) {
+        fprintf(file, "%s", new_contents);
+        free(new_contents);
+    }
+
+    fclose(file);
 }
 
-// Duplica o diretório quando necessário
+// Duplica o diretório quando necessário !TODO!
 void double_directory(HashDirectory *dir) {
     // Implementação do redimensionamento do diretório
 }
@@ -133,6 +177,8 @@ void split_bucket(HashDirectory *dir, int bucket_index) {
     int new_depth = old_depth + 1;
     int new_bucket_index = bucket_index + (1 << old_depth); // Novo índice do bucket (adicionado um bit mais significativo)
 
+    printf("*>>>\tsplit_bucket: Dividindo o bucket: %d\n", bucket_index);
+    printf("*>>>\tsplit_bucket: Profundidade global: %d, Profundidade local: %d\n", dir->global_depth, old_depth);
     printf(">>>>\tsplit_bucket: Bucket: %d, Profundidade local: %d, Novo índice: %d\n", bucket_index, bucket->local_depth, new_bucket_index);
 
     //if(DEBUG) if(new_bucket_index > 50) exit(0);
@@ -175,8 +221,10 @@ void split_bucket(HashDirectory *dir, int bucket_index) {
 
     printf(">>>>\tsplit_bucket: Entradas distribuidas por [%d] e [%d]\n", bucket_index, new_bucket_index );
 
+    // Reinicializar o bucket original
+    bucket->num_entries = 0;
+
     // Redistribuir as entradas
-    // CHECK: O que acontece se a chave for a mesma?
     for (int i = 0; i < temp_count; i++) {
         int key;
         //sscanf(temp_entries[i], "%d,%*s", &key);
@@ -187,22 +235,47 @@ void split_bucket(HashDirectory *dir, int bucket_index) {
         if (index == bucket_index) {
             strcat(temp_entries[i], "\n");
             fputs(temp_entries[i], original_bucket_file);
+            bucket->num_entries++;
             printf("Mantendo no bucket original [%d] >>\n", bucket_index);
         } else {
             FILE *new_file = fopen(dir->buckets[new_bucket_index]->filename, "a");
             strcat(temp_entries[i], "\n");
             fputs(temp_entries[i], new_file);
             fclose(new_file);
+            dir->buckets[new_bucket_index]->num_entries++;
             printf("Movendo para o novo bucket [%d] >>\n", new_bucket_index);
         }
+
         free(temp_entries[i]);  // Liberar a memória alocada para as entradas temporárias
     }
 
     fclose(original_bucket_file);
 }
 
+// Libera a memória alocada para um bucket
+void free_bucket(Bucket *bucket) {
+    if(bucket) {
+        for(int i = 0; i < bucket->num_entries; i++) {
+            printf(">>\tfree_bucket: liberando a memoria de [%s][%d] entradas\n",bucket->filename, bucket->num_entries);
+            printf(">>\tfree_bucket: liberando a memoria de indice [%d] [%s]\n", i, bucket->entries[i]);
+            free(bucket->entries[i]);
+        }
+        //free(bucket->entries);
+        //free(bucket);
+    }
+}
+
 // Libera toda a memória alocada para o diretório hash
 void free_hash_directory(HashDirectory *dir) {
-    // Implementação para liberar a memória
+    if(dir) {
+        int global_depth = 1 << dir->global_depth;
+        printf(">>\tfree_hash_directory: liberando a memoria de [%d] buckets in dir\n", global_depth);
+        for(int i = 0; i < global_depth; i++) {
+            printf(">>\tfree_hash_directory: liberando a memoria de [%s] com [%d] entrada\n",dir->buckets[i]->filename, dir->buckets[i]->num_entries);
+            free_bucket(dir->buckets[i]);
+        }
+        free(dir->buckets);
+        free(dir);
+    }
 }
 

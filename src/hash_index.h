@@ -30,6 +30,7 @@ char *search_entry(HashDirectory *dir, int key);
 void delete_entry(HashDirectory *dir, int key);
 void double_directory(HashDirectory *dir);
 void split_bucket(HashDirectory *dir, int bucket_index);
+void free_bucket(Bucket *bucket);
 void free_hash_directory(HashDirectory *dir);
 
 #endif
