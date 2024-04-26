@@ -60,8 +60,7 @@ void load_data_from_csv(const char *filename, HashDirectory *dir) {
     char line[1024];
     while (fgets(line, sizeof(line), csvfile) != NULL) {
         // clean
-        int pedido, ano, order;
-        float valor;
+        int order;
         char data[1000];
 
         // Supondo que cada linha no CSV seja no formato: chave,dados
@@ -110,8 +109,8 @@ int insert_entry(HashDirectory *dir, int key, char *data) {
 
 // Busca por uma entrada usando a chave !TODO!
 char *search_entry(HashDirectory *dir, int key) {
-    int index = hash_function(key, dir->global_depth);
-    Bucket *bucket = dir->buckets[index];
+    //int index = hash_function(key, dir->global_depth);
+    //Bucket *bucket = dir->buckets[index];
     
     // Implementação da lógica de busca
     return NULL;
@@ -124,7 +123,7 @@ int delete_entry(HashDirectory *dir, int key) {
     for(depth=dir->global_depth; depth>=3; depth--) { // 3 é o local depth minimo
         int index = hash_function(key, depth);
         Bucket *bucket = dir->buckets[index];
-        printf(">>>\tdelete_entry: Porcurando chave: %d no bucket: %d com depth: %d\n", key, index, depth);
+        printf(">>>\tdelete_entry: Procurando chave: %d no bucket: %d com depth: %d\n", key, index, depth);
 
         // Abrir o arquivo do bucket para leitura
         FILE *file = fopen(bucket->filename, "r");
@@ -133,7 +132,7 @@ int delete_entry(HashDirectory *dir, int key) {
             return 0;
         }
 
-        char line[1024];
+        char line[1024] = "";
         char *new_contents = NULL; // Buffer para armazenar conteúdo atualizado
         size_t new_size = 0;
 
@@ -147,7 +146,9 @@ int delete_entry(HashDirectory *dir, int key) {
                 new_contents = realloc(new_contents, new_size + 1);
                 strcat(new_contents, line);
             }
+            
             printf(">>>>\tdelete_entry: Lendo linha: %s\t do bucket %d\n", strtok(line, "\n"), index);
+            line[0] = '\0';
         }
 
         //reset variables

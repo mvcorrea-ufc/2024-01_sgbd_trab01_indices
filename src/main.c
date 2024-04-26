@@ -53,8 +53,6 @@ int main() {
     //fflush(stdout);
 
     if(DEBUG) printf(CCYAN "\n> main: Processando operações...\n" CRESET);
-
-    int cnt = 0;
     
     while (fscanf(infile, "\n%[^:]:%d,%s", operation, &key, data) != EOF) {
         //operation[strcspn(operation,"\n")] = '\0';
