@@ -1,7 +1,8 @@
-INC:1001/Operação concluída
-INC:1003/Operação concluída
-INC:1011/Operação concluída
-INC:1019/Operação concluída
-INC:65/Operação concluída
-INC:17/Operação concluída
-INC:33/Operação concluída
+INC:1001/3,3
+INC:1003/3,3
+INC:1011/3,3
+INC:1019/4,4
+INC:65/4,4
+INC:17/4,4
+REM:1001/,4,3
+REM:8/,4,0

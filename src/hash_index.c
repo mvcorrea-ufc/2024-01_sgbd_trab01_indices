@@ -75,7 +75,7 @@ void load_data_from_csv(const char *filename, HashDirectory *dir) {
 }
 
 // Insere uma entrada no índice hash
-void insert_entry(HashDirectory *dir, int key, char *data) {
+int insert_entry(HashDirectory *dir, int key, char *data) {
         
         int index = hash_function(key, dir->global_depth);
         Bucket *bucket = dir->buckets[index];
@@ -88,15 +88,14 @@ void insert_entry(HashDirectory *dir, int key, char *data) {
         FILE *bucket_file = fopen(bucket_path, "a"); // Abrir o arquivo para adicionar dados
         if (bucket_file == NULL) {
             perror("Erro ao abrir o arquivo do bucket");
-            return;
+            return 0;
         }
 
         if (bucket->num_entries < 3) {
-                // split data (pedido, data)
-                fprintf(bucket_file, "%d,%s\n", key, data);
-                bucket->num_entries++;
+            // split data (pedido, data)
+            fprintf(bucket_file, "%d,%s\n", key, data);
+            bucket->num_entries++;
         } else {
-            // TODO: Implementar a divisão do bucket
             printf("\n>>>\tinsert_entry: Bucket %d está cheio, dividindo...\n", index);
             split_bucket(dir, index);
             insert_entry(dir, key, data); // Tentar novamente após a divisão
@@ -104,6 +103,7 @@ void insert_entry(HashDirectory *dir, int key, char *data) {
 
         fclose(bucket_file); // Fechar o arquivo após a inserção
         fflush(stdout);
+        return bucket->local_depth;
 }
 
 
@@ -118,7 +118,7 @@ char *search_entry(HashDirectory *dir, int key) {
 }
 
 // Remove uma entrada do índice hash
-void delete_entry(HashDirectory *dir, int key) {
+int delete_entry(HashDirectory *dir, int key) {
     int index = hash_function(key, dir->global_depth);
     Bucket *bucket = dir->buckets[index];
     printf(">>>\tdelete_entry: Removendo chave: %d do bucket: %d\n", key, index);
@@ -127,7 +127,7 @@ void delete_entry(HashDirectory *dir, int key) {
     FILE *file = fopen(bucket->filename, "r");
     if (file == NULL) {
         perror("Erro ao abrir o arquivo do bucket");
-        return;
+        return 0;
     }
 
     char line[1024];
@@ -136,7 +136,6 @@ void delete_entry(HashDirectory *dir, int key) {
 
     // Ler o arquivo e filtrar a entrada a ser removida
     while (fgets(line, sizeof(line), file) != NULL) {
-        printf(">>>\tdelete_entry: Lendo linha: %s\n", line);
         int current_key;
         sscanf(line, "%d,%*s", &current_key);
         if (current_key != key) {
@@ -145,6 +144,7 @@ void delete_entry(HashDirectory *dir, int key) {
             new_contents = realloc(new_contents, new_size + 1);
             strcat(new_contents, line);
         }
+        printf(">>>\tdelete_entry: Lendo linha: %s\t%s", line);
     }
 
     fclose(file);
@@ -154,7 +154,7 @@ void delete_entry(HashDirectory *dir, int key) {
     if (file == NULL) {
         perror("Erro ao reabrir o arquivo do bucket para escrita");
         free(new_contents);
-        return;
+        return 0;
     }
 
     if (new_contents) {
@@ -163,6 +163,7 @@ void delete_entry(HashDirectory *dir, int key) {
     }
 
     fclose(file);
+    return bucket->local_depth;
 }
 
 // Duplica o diretório quando necessário !TODO!

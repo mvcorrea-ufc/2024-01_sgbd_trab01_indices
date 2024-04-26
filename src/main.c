@@ -7,7 +7,8 @@
 #define DEBUG 1
 #define CRESET  "\x1b[0m"
 #define CCYAN   "\x1b[36m"
-#define CRED    "\x1b[31m" 
+#define CRED    "\x1b[31m"
+#define CGREEN  "\x1b[32m"
 
 int main() {
 
@@ -55,38 +56,41 @@ int main() {
 
     int cnt = 0;
     
-    while (fscanf(infile, "\n%[^:]:%d,%s", operation, &key, data)== 3) {
+    while (fscanf(infile, "\n%[^:]:%d,%s", operation, &key, data) != EOF) {
         //operation[strcspn(operation,"\n")] = '\0';
 
-        // TODO: verificar o porque o fscanf não está lendo corretamente a string de operação
-        printf("[%s][%d][%s]\n", operation, key, data);
-        if (cnt++ > 20) break;
-        if (operation[0] == '\n') { continue; } // skip empty lines
-        if (operation[0] == '#') { continue; }  // pula os comentários
-        if(DEBUG) printf(">>\tmain: op:[%s], key:[%d], data[%s]\n", operation, key, data);
-        
-        if (strcmp(operation, "INC") == 0) { // Inserir uma nova entrada
-            insert_entry(dir, key, data); // Suponha que a entrada de dados seja uma string genérica
-            fprintf(outfile, "INC:%d/Operação concluída\n", key);
-        } 
-        /*
-        else if (strcmp(operation, "REM") == 0) { // Remover uma entrada existente
-            delete_entry(dir, key);
-            fprintf(outfile, "REM:%d/Operação concluída\n", key);
-        } 
-        */
-        /*
-        else if (strcmp(operation, "BUS") == 0) {
-            char *result = search_entry(dir, key);
-            if (result != NULL) {
-                fprintf(outfile, "BUS:%d/Encontrado\n", key);
-            } else {
-                fprintf(outfile, "BUS:%d/Não encontrado\n", key);
-            }
-        }
-        */
+        if(strcmp(operation, "INC") == 0 || strcmp(operation, "REM") == 0 || strcmp(operation, "BUS=") == 0) {
+            //printf("[%s][%d][%s]\n", operation, key, data);
+            if(DEBUG) printf(CGREEN "\n>>\tmain: op:[%s], key:[%d], data[%s]\n" CRESET, operation, key, data);
 
-       
+            if(strcmp(operation, "INC") == 0 && data[0] != '\0') {
+                int local_depth = insert_entry(dir, key, data);
+                fprintf(outfile, "INC:%d/%d,%d\n", key, dir->global_depth, local_depth);
+            } 
+            else if(strcmp(operation, "REM") == 0) {
+                int local_depth = delete_entry(dir, key);
+                fprintf(outfile, "REM:%d/,%d,%d\n", key, dir->global_depth, local_depth);
+            } 
+            /*
+            else if(strcmp(operation, "BUS") == 0) {
+                char *result = search_entry(dir, key);
+                if (result != NULL) {
+                    fprintf(outfile, "BUS:%d/Encontrado\n", key);
+                } else {
+                    fprintf(outfile, "BUS:%d/Não encontrado\n", key);
+                }
+            }
+            */
+
+        } else {
+            fprintf(stderr, CRED "\nErro: Operação inválida [%s]\n" CRESET, operation);
+            continue;
+        }
+
+        // reset data
+        memset(operation, 0, sizeof(operation));
+        memset(data, 0, sizeof(data));
+        memset(&key, 0, sizeof(key));       
     }
 
     // Liberar recursos e fechar arquivos
