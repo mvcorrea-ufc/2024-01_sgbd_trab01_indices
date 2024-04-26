@@ -119,9 +119,61 @@ char *search_entry(HashDirectory *dir, int key) {
 
 // Remove uma entrada do índice hash
 int delete_entry(HashDirectory *dir, int key) {
+    int depth = 0;
+    // preciso iterar entre o global depth ate o local depth
+    for(depth=dir->global_depth; depth>=3; depth--) { // 3 é o local depth minimo
+        int index = hash_function(key, depth);
+        Bucket *bucket = dir->buckets[index];
+        printf(">>>\tdelete_entry: Porcurando chave: %d no bucket: %d com depth: %d\n", key, index, depth);
+
+        // Abrir o arquivo do bucket para leitura
+        FILE *file = fopen(bucket->filename, "r");
+        if (file == NULL) {
+            perror("Erro ao abrir o arquivo do bucket");
+            return 0;
+        }
+
+        char line[1024];
+        char *new_contents = NULL; // Buffer para armazenar conteúdo atualizado
+        size_t new_size = 0;
+
+        // Ler o arquivo e filtrar a entrada a ser removida
+        while (fgets(line, sizeof(line), file) != NULL) {
+            int current_key;
+            sscanf(line, "%d,%*s", &current_key);
+            if (current_key != key) {
+                // Se a chave não é a que queremos deletar, adiciona ao buffer
+                new_size += strlen(line);
+                new_contents = realloc(new_contents, new_size + 1);
+                strcat(new_contents, line);
+            }
+            printf(">>>>\tdelete_entry: Lendo linha: %s\t do bucket %d\n", strtok(line, "\n"), index);
+        }
+
+        //reset variables
+        line[0] = '\0';
+        fclose(file);
+
+        // Reescrever o arquivo do bucket apenas com as entradas que não foram deletadas
+        file = fopen(bucket->filename, "w");
+        if (file == NULL) {
+            perror("Erro ao reabrir o arquivo do bucket para escrita");
+            free(new_contents);
+            return 0;
+        }
+
+        if (new_contents) {
+            fprintf(file, "%s", new_contents);
+            free(new_contents);
+        }
+
+        fclose(file);
+    }
+/*
     int index = hash_function(key, dir->global_depth);
+    
     Bucket *bucket = dir->buckets[index];
-    printf(">>>\tdelete_entry: Removendo chave: %d do bucket: %d\n", key, index);
+    printf(">>>\tdelete_entry: Removendo chave: %d do bucket: %d global_depth: %d\n", key, index, dir->global_depth);
 
     // Abrir o arquivo do bucket para leitura
     FILE *file = fopen(bucket->filename, "r");
@@ -163,7 +215,8 @@ int delete_entry(HashDirectory *dir, int key) {
     }
 
     fclose(file);
-    return bucket->local_depth;
+*/
+    return depth;
 }
 
 // Duplica o diretório quando necessário !TODO!
